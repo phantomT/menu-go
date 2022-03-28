@@ -1,16 +1,16 @@
 package main
 
 /********************************************************************************************/
-/* Copyright (C), SSE@USTC, 2021-2022														*/
-/*																							*/
-/*  FILE NAME             :  menu.go														*/
-/*  PRINCIPAL AUTHOR      :  Terabyte														*/
-/*  SUBSYSTEM NAME        :  menu															*/
-/*  MODULE NAME           :  menu															*/
-/*  LANGUAGE              :  Go																*/
-/*  TARGET ENVIRONMENT    :  Any															*/
-/*  DATE OF FIRST RELEASE :  2022/03/23														*/
-/*  DESCRIPTION           :  This is a menu program											*/
+/* Copyright (C), SSE@USTC, 2021-2022                                                       */
+/*                                                                                          */
+/*  FILE NAME             :  menu.go                                                        */
+/*  PRINCIPAL AUTHOR      :  Terabyte                                                       */
+/*  SUBSYSTEM NAME        :  menu                                                           */
+/*  MODULE NAME           :  menu                                                           */
+/*  LANGUAGE              :  Go                                                             */
+/*  TARGET ENVIRONMENT    :  Any                                                            */
+/*  DATE OF FIRST RELEASE :  2022/03/23                                                     */
+/*  DESCRIPTION           :  This is a menu program                                         */
 /********************************************************************************************/
 
 /*
