@@ -16,7 +16,7 @@ package main
 /*
  * Revision log:
  *
- * Add Basic Interfaces of Link Table, 2022/04/06
+ * Add Basic Interface of Link Table, 2022/04/06
  * Created by Terabyte, 2022/04/06
  *
  */
