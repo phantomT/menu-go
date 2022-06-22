@@ -18,6 +18,7 @@ package main
  *
  * Add Basic Interface of Link Table, 2022/04/06
  * Created by Terabyte, 2022/04/06
+ * Add Callback interface, 2022/06/22
  *
  */
 
@@ -30,7 +31,7 @@ const SUCCESS = 0
 const FAILURE = -1
 
 /*
- * Define LinkTable Node
+ * LinkTable Node Type
  */
 type LinkTableNode struct {
 	pNext *LinkTableNode
@@ -135,6 +136,24 @@ func DelLinkTableNode(pLinkTable *LinkTable, pNode *LinkTableNode) int {
 	}
 	pLinkTable.mutex.Unlock()
 	return FAILURE
+}
+
+/*
+ * Search a LinkTableNode from LinkTable
+ * Condition func(pNode *LinkTableNode, args interface{}) int
+ */
+func SearchLinkTableNode(pLinkTable *LinkTable, Condition func(pNode *LinkTableNode, args interface{}) int, args interface{}) *LinkTableNode {
+	if pLinkTable == nil || Condition == nil {
+		return nil
+	}
+	var pNode *LinkTableNode = pLinkTable.pHead
+	for pNode != nil {
+		if Condition(pNode, args) == SUCCESS {
+			return pNode
+		}
+		pNode = pNode.pNext
+	}
+	return nil
 }
 
 /*

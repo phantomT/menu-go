@@ -1,5 +1,12 @@
 package main
 
+import (
+	"fmt"
+	"os"
+	"strings"
+	"unsafe"
+)
+
 /********************************************************************************************/
 /* Copyright (C), SSE@USTC, 2021-2022                                                       */
 /*                                                                                          */
@@ -20,77 +27,113 @@ package main
  *
  */
 
-import (
-	"fmt"
-	"os"
-)
-
 // dlv debug --headless --listen=:2345
 
-const CMD_MAX_LEN int = 128
+const CMD_MAX_ARGV_NUM int = 32
 const DESC_LEN int = 1024
 const CMD_NUM int = 10
 
+var head *LinkTable = nil
+
 type DataNode struct {
+	pnext   *LinkTableNode
 	cmd     string
 	desc    string
-	handler func()
-	next    *DataNode
+	handler func(argc int, argv []string)
 }
 
-var head [5]DataNode
-
-func init() {
-	head = [5]DataNode{
-		{"help", "Get the Menu List", Help, &head[1]},
-		{"list", "Hurry up to make your choise!", nil, &head[2]},
-		{"setup", "Watch up where you going", nil, &head[3]},
-		{"quit", "Exit Program", Quit, &head[4]},
-		{"nut", "Easter Egg", Nut, nil},
+func SearchConditon(pLinkTableNode *LinkTableNode, arg interface{}) int {
+	var cmd string = arg.(string)
+	var pNode *DataNode = (*DataNode)(unsafe.Pointer(pLinkTableNode))
+	if pNode.cmd == cmd {
+		return SUCCESS
 	}
+	return FAILURE
 }
 
-func main() {
-	var cmdline string
-	fmt.Println("WelCome to The Machine")
-	fmt.Println("####################################")
+/* find a cmd in the linklist and return the datanode pointer */
+func FindCmd(head *LinkTable, cmd string) *DataNode {
+	var pNode *DataNode = (*DataNode)(unsafe.Pointer(GetLinkTableHead(head)))
+	for pNode != nil {
+		if pNode.cmd != cmd {
+			return pNode
+		}
+		pNode = (*DataNode)(unsafe.Pointer(GetNextLinkTableNode(head, (*LinkTableNode)(unsafe.Pointer(pNode)))))
+	}
+	return nil
+}
+
+/* show all cmd in listlist */
+func ShowAllCmd(head *LinkTable) int {
+	var pNode *DataNode = (*DataNode)(unsafe.Pointer(GetLinkTableHead(head)))
+	for pNode != nil {
+		fmt.Println(pNode.cmd + " - " + pNode.desc)
+		pNode = (*DataNode)(unsafe.Pointer(GetNextLinkTableNode(head, (*LinkTableNode)(unsafe.Pointer(pNode)))))
+	}
+	return 0
+}
+
+func Help(argc int, argv []string) {
+	ShowAllCmd(head)
+}
+
+/* add cmd to menu */
+func MenuConfig(cmd string, desc string, handler func(argc int, argv []string)) int {
+	var pNode *DataNode = nil
+	if head == nil {
+		head = CreateLinkTable()
+		pNode = new(DataNode)
+		pNode.cmd = "help"
+		pNode.desc = "Menu List:"
+		pNode.handler = Help
+		AddLinkTableNode(head, (*LinkTableNode)(unsafe.Pointer(pNode)))
+	}
+	pNode = new(DataNode)
+	pNode.cmd = cmd
+	pNode.desc = desc
+	pNode.handler = handler
+	AddLinkTableNode(head, (*LinkTableNode)(unsafe.Pointer(pNode)))
+	return 0
+}
+
+/* Menu Engine Execute */
+func ExecuteMenu() {
+	/* cmd line begins */
 	for true {
-		fmt.Println("\n#*********# Go_MENU v0.1 #*********#")
-		fmt.Println("Input a cmd > ")
+		var argc int = 0
+		var argv []string
+		var cmdline string
+		fmt.Print("Input a cmd > ")
 		fmt.Scan(&cmdline)
-		p := &head[0]
-		for p != nil {
-			if p.cmd == cmdline {
-				if p.handler == nil {
-					fmt.Println(p.desc)
-				} else {
-					p.handler()
-				}
-				break
-			}
-			p = p.next
+		if cmdline == "" {
+			continue
 		}
+		var cmdList = strings.Split(cmdline, " ")
+		if len(cmdList) <= CMD_MAX_ARGV_NUM {
+			argc = len(cmdList)
+		} else {
+			fmt.Println("This is a wrong cmd!")
+			continue
+		}
+		argv = cmdList
+		var p *DataNode = (*DataNode)(unsafe.Pointer(SearchLinkTableNode(head, SearchConditon, argv[0])))
 		if p == nil {
-			fmt.Println("HAHA, VERY FUNNY, DO THAT AGAIN")
+			fmt.Println("This is a wrong cmd!")
+			continue
+		}
+		if p.handler != nil {
+			p.handler(argc, argv)
 		}
 	}
 }
 
-func Help() {
-	fmt.Println("How can I help you?")
-	p := &head[0]
-	for p != nil && p.next != nil {
-		fmt.Println(p.cmd + " - " + p.desc)
-		p = p.next
-	}
-}
-
-func Quit() {
-	fmt.Println("OK OK I'm done.")
+func Quit(argc int, argv []string) {
+	fmt.Println("Program terminated.")
 	os.Exit(0)
 }
 
-func Nut() {
-	fmt.Println("I could be bounded in a nutshell and count myself a king of infinite space.")
-	fmt.Println("https://github.com/phantomT/T-Shell")
+func main() {
+	MenuConfig("version", "Menu-Go V1.0(menu program v1.0 inside)", nil)
+	MenuConfig("quit", "Quit from Menu-Go", Quit)
+	ExecuteMenu()
 }
